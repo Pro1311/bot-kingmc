@@ -19,6 +19,7 @@ bot.on('spawn', () => {
     bot.chat('/login Andeptrai');
   }, 3000);
 
+  // Tu dong chem quai
   setInterval(() => {
     const entity = bot.nearestEntity(e => e.type === 'mob');
     if (entity && bot.entity.position.distanceTo(entity.position)  { bot.chat('/stats'); }, 120000);
