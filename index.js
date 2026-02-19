@@ -2,34 +2,28 @@ const mineflayer = require('mineflayer')
 const express = require('express')
 const app = express()
 
-// 1. TẠO CỔNG WEB ĐỂ TREO MÁY (CHO RENDER & CRON-JOB)
-app.get('/', (req, res) => { res.send('Bot AFK dang chay 24/7!') })
+// Giữ cho Render không bị tắt
+app.get('/', (req, res) => { res.send('Bot AFK dang chay!') })
 app.listen(3000)
 
-// 2. CẤU HÌNH BOT MINECRAFT
 const bot = mineflayer.createBot({
-host: 'kingmc.vn',
-username: 'Deep_darkness', // Thay đổi tên nhân vật nếu muốn
-version: '1.21.1',
-auth: 'offline'
+  host: 'kingmc.vn',
+  username: 'Deep_darkness',
+  version: '1.21.1',
+  auth: 'offline'
 })
 
 bot.on('spawn', () => {
-console.log('Bot đã vào KingMC thành công!');
+  console.log('Bot da vao KingMC!');
+  setTimeout(() => {
+    bot.chat('/login Andeptrai');
+  }, 3000);
 
-// Tự động đăng nhập mật khẩu Andeptrai
-setTimeout(() => {
-bot.chat('/login Andeptrai');
-console.log('Đã gửi mật khẩu: Andeptrai');
-}, 3000);
-
-// Tự động chém quái mỗi 1.5 giây
-setInterval(() => {
-const entity = bot.nearestEntity(e => e.type === 'mob');
-if (entity && bot.entity.position.distanceTo(entity.position) { bot.chat('/stats'); }, 120000);
+  setInterval(() => {
+    const entity = bot.nearestEntity(e => e.type === 'mob');
+    if (entity && bot.entity.position.distanceTo(entity.position)  { bot.chat('/stats'); }, 120000);
 });
 
-// Tự động hồi sinh và kết nối lại
-bot.on('death', () => { bot.spawn(); });
 bot.on('end', () => {
-setTimeout(() => { process.exit(); }, 10000);
+  setTimeout(() => { process.exit(); }, 10000);
+});
