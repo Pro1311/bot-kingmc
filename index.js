@@ -2,46 +2,37 @@ const mineflayer = require('mineflayer')
 const express = require('express')
 const app = express()
 
-// 1. Giữ cho Render không ngủ
-app.get('/', (req, res) => {
-  res.send('Bot AFK dang dung yen giu farm!')
+// Web Server để giữ Render không ngủ
+app.get('/', (req, res) => { res.send('Bot AFK dang chay!') })
+app.listen(3000)
+
+const bot = mineflayer.createBot({
+  host: 'kingmc.vn',
+  username: 'Deep_darkness',
+  version: '1.21.1',
+  auth: 'offline'
 })
-app.listen(3000, () => {
-  console.log('Web Server da san sang!')
-})
 
-function createBot() {
-  const bot = mineflayer.createBot({
-    host: 'kingmc.vn',
-    username: 'Deep_darkness',
-    version: false, // auto detect version cho ổn định hơn
-    auth: 'offline'
-  })
+// Chống bị đá AFK
+bot.on('spawn', () => {
+  console.log('Bot da vao KingMC!');
+  setTimeout(() => {
+    bot.chat('/login Andeptrai');
+  }, 3000);
 
-  let intervals = []
+  // Xoay đầu nhẹ mỗi 5 giây
+  setInterval(() => {
+    bot.look(bot.entity.yaw + (Math.random() - 0.5), bot.entity.pitch + (Math.random() - 0.5), true)
+  }, 5000);
 
-  function randomBetween(min, max) {
-    return Math.random() * (max - min) + min
-  }
+  // Gõ lệnh mỗi 2 phút
+  setInterval(() => { bot.chat('/stats'); }, 120000);
+});
 
-  bot.on('spawn', () => {
-    console.log('Bot da vao server va dang AFK!')
+// Tự động vào lại nếu bị đá
+bot.on('end', () => {
+  console.log('Bot bi ngat, dang vao lai sau 10s...');
+  setTimeout(() => { process.exit(); }, 10000);
+});
 
-    // Login sau 3 giây
-    setTimeout(() => {
-      bot.chat('/login Andeptrai')
-    }, 3000)
-
-    // Xoay camera nhẹ
-    const lookInterval = setInterval(() => {
-      let yaw = bot.entity.yaw + randomBetween(-0.5, 0.5)
-      let pitch = bot.entity.pitch + randomBetween(-0.2, 0.2)
-
-      // Giới hạn pitch tránh bug
-      pitch = Math.max(-1.5, Math.min(1.5, pitch))
-
-      bot.look(yaw, pitch, true)
-    }, 5000)
-
-    // Nhảy nhẹ
-    const jumpInterval = setInterval(() => {
+bot.on('error', err => console.log('Loi:', err));
