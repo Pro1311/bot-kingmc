@@ -1,38 +1,63 @@
 const mineflayer = require('mineflayer')
+const { pathfinder, Movements, goals } = require('mineflayer-pathfinder')
+const GoalFollow = goals.GoalFollow
 const express = require('express')
 const app = express()
 
-// GIỮ CỔNG CHO RENDER (BẮT BUỘC)
+// GIỮ CỔNG CHO RENDER
 const port = process.env.PORT || 3000
-app.get('/', (req, res) => { res.send('Bot Pro dang online!') })
-app.listen(port, '0.0.0.0', () => { console.log('Web Server Live!') })
+app.get('/', (req, res) => { res.send('Bot dang di chuyen vao SMP...') })
+app.listen(port, '0.0.0.0')
 
 const bot = mineflayer.createBot({
   host: 'kingmc.vn',
-  username: 'Pro_AFK_2026', // NÊN ĐỔI TÊN THẬT LẠ (Không dùng tên quá ngắn)
+  username: 'Pro_AFK_2026', // Tên acc "Pro" của bạn
   version: '1.21.1',
-  auth: 'offline',
-  checkTimeoutInterval: 60000 // Tăng thời gian chờ để tránh bị lag đá
+  auth: 'offline'
 })
 
+bot.loadPlugin(pathfinder)
+
 bot.on('spawn', () => {
-  console.log('CHÚC MỪNG: Bot Pro đã vào KingMC!');
-  // Đăng nhập sau 5 giây để server load xong
-  setTimeout(() => { 
-    bot.chat('/login MatKhauCuaBan'); // THAY MẬT KHẨU ACC "PRO" VÀO ĐÂY
-  }, 5000);
+  console.log('Bot da vao Sanh cho!');
+  
+  // 1. Đăng nhập
+  setTimeout(() => {
+    bot.chat('/login Andeptrai'); // THAY MẬT KHẨU CỦA BẠN
+  }, 3000);
+
+  // 2. Tự động đi tới NPC SMP và Click
+  setTimeout(() => {
+    // TÌM NPC HOẶC BLOCK CÓ CHỮ "SMP"
+    const target = bot.nearestEntity(e => e.name && e.name.toLowerCase().includes('smp')) 
+    
+    if (target) {
+      console.log('Da thay SMP, dang di toi...');
+      const mcData = require('minecraft-data')(bot.version)
+      const movements = new Movements(bot, mcData)
+      bot.pathfinder.setMovements(movements)
+      
+      // Đi tới sát NPC (khoảng cách 2 block)
+      bot.pathfinder.setGoal(new goals.GoalFollow(target, 2))
+      
+      // Khi đến nơi thì Chuột phải
+      bot.on('goal_reached', () => {
+        bot.activateEntity(target);
+        console.log('Da click vao SMP!');
+      });
+    } else {
+      // NẾU KHÔNG THẤY NPC, THỬ DÙNG LỆNH NHANH
+      bot.chat('/smp'); 
+    }
+  }, 10000);
 });
 
-// XOAY CAMERA ĐỂ GIẢ LÀM NGƯỜI THẬT
+// Chống bị đá AFK khi đã vào được cụm SMP
 setInterval(() => {
   if (bot.entity) {
-    bot.look(bot.entity.yaw + (Math.random() - 0.5), bot.entity.pitch + (Math.random() - 0.5), true)
+    bot.look(bot.entity.yaw + 0.5, bot.entity.pitch, true);
+    bot.chat('/stats');
   }
-}, 7000);
+}, 120000);
 
-bot.on('end', (reason) => {
-  console.log('Bị ngắt kết nối vì: ' + reason);
-  setTimeout(() => { process.exit(); }, 15000); // Khởi động lại sau 15 giây
-});
-
-bot.on('error', err => console.log('Lỗi: ', err));
+bot.on('end', () => { setTimeout(() => { process.exit(); }, 15000); });
