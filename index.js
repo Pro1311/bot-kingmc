@@ -1,65 +1,57 @@
 const mineflayer = require('mineflayer')
-const { pathfinder, Movements, goals } = require('mineflayer-pathfinder')
 const express = require('express')
 const app = express()
 
-// GIỮ CỔNG CHO RENDER (BẮT BUỘC)
+// 1. GIỮ CỔNG CHO RENDER (BẮT BUỘC)
 const port = process.env.PORT || 3000
-app.get('/', (req, res) => { res.send('Bot Deep_darkness dang vao SMP...') })
-app.listen(port, '0.0.0.0')
+app.get('/', (req, res) => { res.send('Bot Deep_darkness dang treo tai KingSMP...') })
+app.listen(port, '0.0.0.0', () => { console.log('Web Server Live!') })
 
+// 2. CẤU HÌNH KẾT NỐI BOT
 const bot = mineflayer.createBot({
   host: 'kingmc.vn',
-  username: 'Deep_darkness', // Đã đổi về acc chính của bạn
+  username: 'Deep_darkness', 
   version: '1.21.1',
   auth: 'offline'
 })
 
-bot.loadPlugin(pathfinder)
-
 bot.on('spawn', () => {
-  console.log('Bot Deep_darkness đã vào Sảnh chờ!');
+  console.log('Bot da vao Sanh cho!');
   
-  // 1. Đăng nhập sau 3 giây
+  // Bước 1: Đăng nhập sau 3 giây
   setTimeout(() => {
     bot.chat('/login Andeptrai'); 
-    console.log('Đã gửi mật khẩu login.');
+    console.log('Da gui mat khau login.');
   }, 3000);
 
-  // 2. Tự động đi tới NPC và Click vào cụm SMP
+  // Bước 2: Mở Menu chọn Server sau 10 giây (khi đã login xong)
   setTimeout(() => {
-    console.log('Đang tìm NPC SMP...');
-    // Tìm NPC có tên chứa chữ 'smp' hoặc 'earth'
-    const target = bot.nearestEntity(e => e.name && e.name.toLowerCase().includes('smp')) 
-    
-    if (target) {
-      const mcData = require('minecraft-data')(bot.version)
-      const movements = new Movements(bot, mcData)
-      bot.pathfinder.setMovements(movements)
-      
-      // Đi tới sát NPC (khoảng cách 2 block)
-      bot.pathfinder.setGoal(new goals.GoalFollow(target, 2))
-      
-      // Khi đến nơi thì Chuột phải vào NPC
-      bot.on('goal_reached', () => {
-        bot.activateEntity(target);
-        console.log('Đã Click vào NPC SMP thành công!');
-      });
-    } else {
-      // NẾU KHÔNG THẤY NPC, THỬ DÙNG LỆNH NHANH
-      bot.chat('/smp'); 
-      console.log('Không thấy NPC, đã thử dùng lệnh /smp');
-    }
+    console.log('Dang mo Menu de chon Server...');
+    bot.setQuickBarSlot(0); // Chon o so 1 trong tui do (Vat pham Menu)
+    bot.activateItem(); // Chuot phai de mo bang chon
   }, 10000);
+
+  // Bước 3: Tu dong Click vao o KingSMP (O so 12 trong Menu)
+  bot.on('windowOpen', (window) => {
+    console.log('Da mo bảng chọn, dang click vao o KingSMP...');
+    // O so 12 tuong ung voi so 11 trong code (vi may tinh dem tu 0)
+    bot.clickWindow(11, 0, 0); 
+    console.log('Da Click vao KingSMP thanh cong!');
+  });
 });
 
-// Chống bị đá AFK khi đã vào cụm game
+// CHỐNG BỊ ĐÁ AFK (Xoay camera và gõ lệnh mỗi 2 phút)
 setInterval(() => {
   if (bot.entity) {
-    bot.look(bot.entity.yaw + 0.5, bot.entity.pitch, true);
+    bot.look(bot.entity.yaw + 0.2, bot.entity.pitch, true);
     bot.chat('/stats');
   }
 }, 120000);
 
-bot.on('end', () => { setTimeout(() => { process.exit(); }, 15000); });
-bot.on('error', err => console.log('Lỗi: ', err));
+// TỰ ĐỘNG KẾT NỐI LẠI KHI BỊ LỖI
+bot.on('end', () => {
+  console.log('Mat ket noi, dang vao lai sau 15s...');
+  setTimeout(() => { process.exit(); }, 15000);
+});
+
+bot.on('error', err => console.log('Loi: ', err));
