@@ -2,9 +2,10 @@ const mineflayer = require('mineflayer')
 const express = require('express')
 const app = express()
 
-// Web Server để giữ Render không ngủ
-app.get('/', (req, res) => { res.send('Bot AFK dang chay!') })
-app.listen(3000)
+// QUAN TRỌNG: Render cần cổng này để giữ bot online
+const port = process.env.PORT || 3000
+app.get('/', (req, res) => { res.send('Bot AFK dang chay 24/7!') })
+app.listen(port, () => { console.log('Web Server da san sang tren cong ' + port) })
 
 const bot = mineflayer.createBot({
   host: 'kingmc.vn',
@@ -13,25 +14,19 @@ const bot = mineflayer.createBot({
   auth: 'offline'
 })
 
-// Chống bị đá AFK
 bot.on('spawn', () => {
   console.log('Bot da vao KingMC!');
-  setTimeout(() => {
-    bot.chat('/login Andeptrai');
-  }, 3000);
-
-  // Xoay đầu nhẹ mỗi 5 giây
+  setTimeout(() => { bot.chat('/login Andeptrai'); }, 3000);
+  // Xoay dau nhe moi 5 giay
   setInterval(() => {
     bot.look(bot.entity.yaw + (Math.random() - 0.5), bot.entity.pitch + (Math.random() - 0.5), true)
   }, 5000);
-
-  // Gõ lệnh mỗi 2 phút
+  // Go lenh moi 2 phut
   setInterval(() => { bot.chat('/stats'); }, 120000);
 });
 
-// Tự động vào lại nếu bị đá
 bot.on('end', () => {
-  console.log('Bot bi ngat, dang vao lai sau 10s...');
+  console.log('Mat ket noi, dang vao lai...');
   setTimeout(() => { process.exit(); }, 10000);
 });
 
